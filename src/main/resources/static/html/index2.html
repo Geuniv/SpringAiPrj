@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatPDF</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .file-input {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .file-input input {
+            padding: 10px;
+            font-size: 16px;
+        }
+        hr {
+            border: 0;
+            height: 1px;
+            background: #e0e0e0;
+            margin: 20px 0;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        #questionInput {
+            width: calc(100% - 120px);
+            padding: 10px;
+            font-size: 16px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            min-height: 50px;
+        }
+        .spinner {
+            display: none;
+            margin: 20px auto;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ChatPDF</h1>
+        <hr>
+        <div class="file-input">
+            <label for="fileUpload">Choose a file</label>
+            <input type="file" id="fileUpload" accept=".pdf">
+        </div>
+        <hr>
+        <h2>PDF에게 질문해보세요!!</h2>
+        <input type="text" id="promptInput" placeholder="질문을 입력하세요." style="width: 65%;">
+        <button onclick="askQuestion()">질문하기</button>
+        <div class="spinner" id="spinner"></div>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        async function askQuestion() {
+            const question = document.getElementById('questionInput').value;
+            const fileInput = document.getElementById('fileUpload');
+            const resultDiv = document.getElementById('result');
+            const spinner = document.getElementById('spinner');
+
+            if (!fileInput.files.length) {
+                alert('파일을 선택하세요.');
+                return;
+            }
+
+            spinner.style.display = 'block';
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('question', question);
+
+            try {
+                const response = await fetch('http://localhost:8501/ask', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                resultDiv.innerHTML = data.result;
+            } catch (error) {
+                resultDiv.innerHTML = 'Error: ' + error.message;
+            } finally {
+                spinner.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
